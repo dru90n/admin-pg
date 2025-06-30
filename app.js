@@ -37,7 +37,8 @@ function showNewOrder() {
     <button onclick="simpanOrder()">Simpan</button>
   `;
   document.getElementById('content-section').innerHTML = html;
-  document.getElementById('order_number').value = 'ORD' + Date.now();
+  const randomOrderNumber = 'ORD' + Math.floor(100000 + Math.random() * 900000);
+  document.getElementById('order_number').value = randomOrderNumber;
   document.getElementById('order_date').valueAsDate = new Date();
 }
 
