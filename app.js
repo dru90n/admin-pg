@@ -1,9 +1,9 @@
 // Inisialisasi Supabase
 const SUPABASE_URL = "https://zbunmfsedqalvvadwgkk.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpidW5tZnNlZHFhbHZ2YWR3Z2trIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyNjE2NTUsImV4cCI6MjA2NjgzNzY1NX0.wUEGv5FavNSQT3iNlo6WnW_d3TcDVxRTx8sI6xD-wxQ";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
+// Fungsi login pakai password
 function checkPassword() {
   const pass = document.getElementById('password-input').value;
   if (pass === 'default123') {
@@ -14,125 +14,86 @@ function checkPassword() {
   }
 }
 
+// Menampilkan form New Order
 function showNewOrder() {
   const html = `
     <h3>New Order</h3>
-    <form id="order-form">
-      <input type="text" id="order_number" placeholder="Nomor Order" readonly />
-      <input type="date" id="order_date" />
-      <select id="room_category" onchange="updateRoomOptions()">
-        <option value="">Pilih Kategori</option>
-        <option value="Tulip">Tulip</option>
-        <option value="Orchid">Orchid</option>
-      </select>
-      <input type="text" id="room_name" placeholder="Nama Ruang" />
-      <input type="number" id="vouchers" placeholder="Jumlah Voucher" />
-      <input type="number" id="extra_hours" placeholder="Jam Tambahan" />
-      <input type="text" id="total_bill" placeholder="Total Bill" readonly />
-      <select id="payment_method">
-        <option value="Cash">Cash</option>
-        <option value="Transfer">Transfer</option>
-        <option value="Pay Later">Pay Later</option>
-      </select>
-      <button type="submit">Simpan</button>
-    </form>
+    <input type="text" id="order_number" placeholder="Nomor Order" readonly />
+    <input type="date" id="order_date" />
+
+    <select id="room_category" onchange="updateRoomOptions()">
+      <option value="">Pilih Kategori</option>
+      <option value="Tulip">Tulip</option>
+      <option value="Orchid">Orchid</option>
+    </select>
+
+    <input type="text" id="room_name" placeholder="Nama Ruang" />
+    <input type="number" id="vouchers" placeholder="Jumlah Voucher" />
+    <input type="number" id="extra_hours" placeholder="Jam Tambahan" />
+    <input type="text" id="total_bill" placeholder="Total Bill" readonly />
+
+    <select id="payment_method">
+      <option value="Cash">Cash</option>
+      <option value="Transfer">Transfer</option>
+      <option value="Pay Later">Pay Later</option>
+    </select>
+
+    <button onclick="simpanOrder()">Simpan</button>
   `;
   document.getElementById('content-section').innerHTML = html;
-
-  const now = new Date();
-  document.getElementById('order_date').value = now.toISOString().split('T')[0];
-  document.getElementById('order_number').value = "ORD" + now.getTime();
-
-  document.getElementById('order-form').onsubmit = async function (e) {
-    e.preventDefault();
-    const category = document.getElementById("room_category").value;
-    const vouchers = parseInt(document.getElementById("vouchers").value || "0");
-    const hours = parseInt(document.getElementById("extra_hours").value || "0");
-
-    let total = 0;
-    if (category === "Tulip") total = (vouchers * 1000) + (hours * 350);
-    else if (category === "Orchid") total = (vouchers * 750) + (hours * 250);
-
-    document.getElementById("total_bill").value = total;
-
-    const { error } = await supabase.from("orders").insert([{
-      order_number: document.getElementById("order_number").value,
-      order_date: document.getElementById("order_date").value,
-      room_category: category,
-      room_name: document.getElementById("room_name").value,
-      vouchers,
-      extra_hours: hours,
-      total_bill: total,
-      payment_method: document.getElementById("payment_method").value,
-      payment_status: document.getElementById("payment_method").value === "Pay Later" ? "Belum Lunas" : "Lunas"
-    }]);
-
-    if (error) alert("Gagal simpan: " + error.message);
-    else alert("Berhasil disimpan!");
-  };
+  document.getElementById('order_number').value = 'ORD' + Date.now();
+  document.getElementById('order_date').valueAsDate = new Date();
 }
 
-function showEditOrder() {
-  const html = `
-    <h3>Edit Order</h3>
-    <input type="text" id="search_order" placeholder="Cari Nomor Order" />
-    <button onclick="findOrder()">Cari</button>
-    <div id="edit-result"></div>
-  `;
-  document.getElementById('content-section').innerHTML = html;
-}
+// Mengupdate total bill otomatis saat input berubah
+function updateRoomOptions() {
+  const category = document.getElementById('room_category').value;
+  const totalInput = document.getElementById('total_bill');
+  const v = parseInt(document.getElementById('vouchers').value || 0);
+  const h = parseInt(document.getElementById('extra_hours').value || 0);
+  let total = 0;
 
-async function findOrder() {
-  const keyword = document.getElementById('search_order').value;
-  const { data, error } = await supabase
-    .from("orders")
-    .select("*")
-    .ilike('order_number', `%${keyword}%`);
-
-  if (data.length === 0) {
-    document.getElementById("edit-result").innerHTML = "Order tidak ditemukan.";
-    return;
+  if (category === 'Tulip') {
+    total = v * 1000 + h * 350;
+  } else if (category === 'Orchid') {
+    total = v * 750 + h * 250;
   }
 
-  const order = data[0];
-  const html = `
-    <p>Order: ${order.order_number}</p>
-    <select id="edit_payment">
-      <option ${order.payment_status === "Belum Lunas" ? "selected" : ""}>Belum Lunas</option>
-      <option ${order.payment_status === "Lunas" ? "selected" : ""}>Lunas</option>
-    </select>
-    <button onclick="saveEdit('${order.id}')">Simpan</button>
-  `;
-  document.getElementById("edit-result").innerHTML = html;
+  totalInput.value = total;
 }
 
-async function saveEdit(id) {
-  const status = document.getElementById("edit_payment").value;
-  const { error } = await supabase.from("orders").update({ payment_status: status }).eq('id', id);
-  if (error) alert("Gagal update: " + error.message);
-  else alert("Berhasil diupdate.");
-}
+// Fungsi simpan ke Supabase
+async function simpanOrder() {
+  const orderNumber = document.getElementById("order_number").value;
+  const orderDate = document.getElementById("order_date").value;
+  const roomCategory = document.getElementById("room_category").value;
+  const roomName = document.getElementById("room_name").value;
+  const vouchers = parseInt(document.getElementById("vouchers").value);
+  const extraHours = parseInt(document.getElementById("extra_hours").value);
+  const totalBill = parseFloat(document.getElementById("total_bill").value);
+  const paymentMethod = document.getElementById("payment_method").value;
+  const paymentStatus = paymentMethod === "Pay Later" ? "Belum Lunas" : "Lunas";
 
-function showFetchData() {
-  const html = `
-    <h3>Tarik Data</h3>
-    <input type="date" id="start_date" />
-    <input type="date" id="end_date" />
-    <button onclick="fetchData()">Tarik</button>
-    <div id="data-result"></div>
-  `;
-  document.getElementById('content-section').innerHTML = html;
-}
+  const { data, error } = await supabase.from("orders").insert([
+    {
+      order_number: orderNumber,
+      order_date: orderDate,
+      room_category: roomCategory,
+      room_name: roomName,
+      vouchers,
+      extra_hours: extraHours,
+      total_bill: totalBill,
+      payment_method: paymentMethod,
+      payment_status: paymentStatus,
+      created_at: new Date().toISOString()
+    }
+  ]);
 
-async function fetchData() {
-  const start = document.getElementById("start_date").value;
-  const end = document.getElementById("end_date").value;
-  const { data, error } = await supabase
-    .from("orders")
-    .select("*")
-    .gte("order_date", start)
-    .lte("order_date", end);
-
-  const list = data.map(o => `<li>${o.order_number} - ${o.room_name} - ${o.total_bill}</li>`).join("");
-  document.getElementById("data-result").innerHTML = `<ul>${list}</ul>`;
+  if (error) {
+    alert("Gagal menyimpan: " + error.message);
+    console.error(error);
+  } else {
+    alert("Order berhasil disimpan!");
+    document.getElementById("content-section").innerHTML = "";
+  }
 }
