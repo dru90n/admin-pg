@@ -6,7 +6,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // Login password
 function checkPassword() {
   const pass = document.getElementById('password-input').value;
-  if (pass === '123123') {
+  if (pass === 'default123') {
     document.getElementById('login-section').style.display = 'none';
     document.getElementById('menu-section').style.display = 'block';
   } else {
