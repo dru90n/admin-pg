@@ -1,6 +1,6 @@
-// Ganti dengan URL dan KEY kamu
-const SUPABASE_URL = "https://xxxx.supabase.co";
-const SUPABASE_KEY = "eyJhbGci..."; 
+// Inisialisasi Supabase
+const SUPABASE_URL = "https://zbunmfsedqalvvadwgkk.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpidW5tZnNlZHFhbHZ2YWR3Z2trIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyNjE2NTUsImV4cCI6MjA2NjgzNzY1NX0.wUEGv5FavNSQT3iNlo6WnW_d3TcDVxRTx8sI6xD-wxQ";
 
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
