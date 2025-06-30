@@ -14,7 +14,7 @@ function checkPassword() {
   }
 }
 
-// Tampilkan form New Order
+// === NEW ORDER ===
 function showNewOrder() {
   const html = `
     <h3>New Order</h3>
@@ -45,7 +45,6 @@ function showNewOrder() {
   document.getElementById('order_date').valueAsDate = new Date();
 }
 
-// Hitung total otomatis
 function updateRoomOptions() {
   const category = document.getElementById('room_category').value;
   const v = parseInt(document.getElementById('vouchers')?.value || 0);
@@ -64,7 +63,6 @@ function updateRoomOptions() {
   }
 }
 
-// Simpan ke Supabase
 async function simpanOrder() {
   const orderNumber = document.getElementById("order_number").value;
   const orderDate = document.getElementById("order_date").value;
@@ -98,4 +96,105 @@ async function simpanOrder() {
     alert("Order berhasil disimpan!");
     document.getElementById("content-section").innerHTML = "";
   }
+}
+
+// === EDIT ORDER ===
+function showEditOrder() {
+  const html = `
+    <h3>Edit Order</h3>
+    <input type="text" id="search_order" placeholder="Masukkan Nomor Order atau Tanggal (YYYY-MM-DD)" />
+    <button onclick="cariOrder()">Cari</button>
+    <div id="edit-result"></div>
+  `;
+  document.getElementById('content-section').innerHTML = html;
+}
+
+async function cariOrder() {
+  const keyword = document.getElementById("search_order").value.trim();
+  if (!keyword) return alert("Masukkan nomor order atau tanggal");
+
+  let { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .or(`order_number.eq.${keyword},order_date.eq.${keyword}`);
+
+  if (error || !data.length) {
+    document.getElementById("edit-result").innerHTML = "Order tidak ditemukan.";
+    return;
+  }
+
+  const order = data[0];
+  const html = `
+    <p><b>Nomor:</b> ${order.order_number}</p>
+    <p><b>Tanggal:</b> ${order.order_date}</p>
+    <p><b>Ruang:</b> ${order.room_name}</p>
+    <p><b>Status Pembayaran:</b> ${order.payment_status}</p>
+
+    <select id="new_payment_status">
+      <option value="Lunas" ${order.payment_status === "Lunas" ? "selected" : ""}>Lunas</option>
+      <option value="Belum Lunas" ${order.payment_status === "Belum Lunas" ? "selected" : ""}>Belum Lunas</option>
+    </select>
+
+    <button onclick="updateOrder('${order.order_number}')">Simpan Perubahan</button>
+  `;
+  document.getElementById("edit-result").innerHTML = html;
+}
+
+async function updateOrder(order_number) {
+  const newStatus = document.getElementById("new_payment_status").value;
+
+  const { error } = await supabase
+    .from("orders")
+    .update({ payment_status: newStatus })
+    .eq("order_number", order_number);
+
+  if (error) {
+    alert("Gagal update: " + error.message);
+  } else {
+    alert("Berhasil diperbarui!");
+    document.getElementById("content-section").innerHTML = "";
+  }
+}
+
+// === TARIK DATA ===
+function showTarikData() {
+  const html = `
+    <h3>Tarik Data</h3>
+    <label>Dari:</label>
+    <input type="date" id="start_date" />
+    <label>Sampai:</label>
+    <input type="date" id="end_date" />
+    <button onclick="tarikData()">Tarik</button>
+    <div id="data-result"></div>
+  `;
+  document.getElementById('content-section').innerHTML = html;
+}
+
+async function tarikData() {
+  const start = document.getElementById("start_date").value;
+  const end = document.getElementById("end_date").value;
+
+  if (!start || !end) {
+    alert("Lengkapi kedua tanggal");
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .gte("order_date", start)
+    .lte("order_date", end);
+
+  if (error) {
+    alert("Gagal tarik data: " + error.message);
+    return;
+  }
+
+  let html = `<p>Ditemukan ${data.length} data:</p><ul>`;
+  data.forEach(d => {
+    html += `<li><b>${d.order_number}</b> (${d.order_date}) - ${d.room_name} - ${d.total_bill} - ${d.payment_status}</li>`;
+  });
+  html += `</ul>`;
+
+  document.getElementById("data-result").innerHTML = html;
 }
