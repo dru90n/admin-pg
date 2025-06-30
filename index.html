@@ -3,26 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Meeting Room Rental</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Aplikasi Persewaan Ruang Meeting</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; }
+    input, select, button { display: block; margin: 1rem 0; padding: 0.5rem; width: 100%; max-width: 400px; }
+    button { cursor: pointer; }
+    #menu-section, #content-section { margin-top: 2rem; }
+  </style>
 </head>
 <body>
+
+  <!-- Halaman Login -->
   <div id="login-section">
     <h2>Masukkan Password</h2>
-    <input type="password" id="password-input" placeholder="Password..." />
-    <button onclick="checkPassword()">Login</button>
+    <input type="password" id="password-input" placeholder="Password" />
+    <button onclick="checkPassword()">Masuk</button>
   </div>
 
-  <div id="menu-section" style="display:none;">
+  <!-- Menu Utama -->
+  <div id="menu-section" style="display: none;">
     <h2>Menu</h2>
     <button onclick="showNewOrder()">New Order</button>
-    <button onclick="showEditOrder()">Edit Order</button>
-    <button onclick="showFetchData()">Tarik Data</button>
+    <button onclick="alert('Fitur Edit Order belum aktif')">Edit Order</button>
+    <button onclick="alert('Fitur Tarik Data belum aktif')">Tarik Data</button>
   </div>
 
+  <!-- Konten Dinamis -->
   <div id="content-section"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase SDK dan JavaScript App -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="app.js"></script>
+
 </body>
 </html>
