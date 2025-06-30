@@ -3,10 +3,10 @@ const SUPABASE_URL = "https://zbunmfsedqalvvadwgkk.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpidW5tZnNlZHFhbHZ2YWR3Z2trIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyNjE2NTUsImV4cCI6MjA2NjgzNzY1NX0.wUEGv5FavNSQT3iNlo6WnW_d3TcDVxRTx8sI6xD-wxQ";
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Login
+// === LOGIN ===
 function checkPassword() {
   const pass = document.getElementById('password-input').value;
-  if (pass === '123123') {
+  if (pass === 'default123') {
     document.getElementById('login-section').style.display = 'none';
     document.getElementById('menu-section').style.display = 'block';
   } else {
@@ -15,8 +15,8 @@ function checkPassword() {
 }
 
 // === NEW ORDER ===
-function showNewOrder() {
-  const html = `
+async function showNewOrder() {
+  let html = `
     <h3>New Order</h3>
     <input type="text" id="order_number" placeholder="Nomor Order" readonly />
     <input type="date" id="order_date" />
@@ -37,9 +37,23 @@ function showNewOrder() {
     <button onclick="simpanOrder()">Simpan</button>
   `;
   document.getElementById('content-section').innerHTML = html;
-  const randomOrderNumber = 'ORD' + Math.floor(100000 + Math.random() * 900000);
-  document.getElementById('order_number').value = randomOrderNumber;
   document.getElementById('order_date').valueAsDate = new Date();
+
+  const { data, error } = await supabase
+    .from('orders')
+    .select('order_number')
+    .order('created_at', { ascending: false })
+    .limit(1);
+
+  let nextNumber = "ORD000001";
+  if (data && data.length > 0) {
+    const lastNumber = data[0].order_number;
+    const lastDigits = parseInt(lastNumber.replace('ORD', '')) || 0;
+    const newDigits = String(lastDigits + 1).padStart(6, '0');
+    nextNumber = "ORD" + newDigits;
+  }
+
+  document.getElementById('order_number').value = nextNumber;
 }
 
 function updateRoomOptions() {
@@ -55,9 +69,7 @@ function updateRoomOptions() {
     total = v * 750 + h * 250;
   }
 
-  if (totalInput) {
-    totalInput.value = total;
-  }
+  if (totalInput) totalInput.value = total;
 }
 
 async function simpanOrder() {
@@ -112,15 +124,13 @@ async function cariOrder() {
   const date = document.getElementById("search_date").value.trim();
   const room = document.getElementById("search_room").value.trim();
 
-  if (!date || !room) {
-    return alert("Lengkapi tanggal dan nama ruang.");
-  }
+  if (!date || !room) return alert("Lengkapi tanggal dan nama ruang.");
 
   const { data, error } = await supabase
     .from("orders")
     .select("*")
     .eq("order_date", date)
-    .ilike("room_name", room); // ilike agar tidak case-sensitive
+    .ilike("room_name", room);
 
   if (error || !data.length) {
     document.getElementById("edit-result").innerHTML = "Order tidak ditemukan.";
@@ -142,7 +152,23 @@ async function cariOrder() {
   document.getElementById("edit-result").innerHTML = html;
 }
 
-// === TARIK DATA + EXPORT ===
+async function updateOrder(order_number) {
+  const newStatus = document.getElementById("new_payment_status").value;
+
+  const { error } = await supabase
+    .from("orders")
+    .update({ payment_status: newStatus })
+    .eq("order_number", order_number);
+
+  if (error) {
+    alert("Gagal update: " + error.message);
+  } else {
+    alert("Berhasil diperbarui!");
+    document.getElementById("content-section").innerHTML = "";
+  }
+}
+
+// === TARIK DATA & EXPORT ===
 function showTarikData() {
   const html = `
     <h3>Tarik Data</h3>
@@ -194,7 +220,7 @@ async function tarikData() {
   });
 
   html += `</tbody></table>
-  <br/><button onclick="exportToExcel()">Export ke Excel (.xls)</button>`;
+    <br/><button onclick="exportToExcel()">Export ke Excel (.xls)</button>`;
 
   document.getElementById("data-result").innerHTML = html;
 }
