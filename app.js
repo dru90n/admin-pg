@@ -97,7 +97,10 @@ async function simpanOrder() {
 function showEditOrder() {
   const html = `
     <h3>Edit Order</h3>
-    <input type="text" id="search_order" placeholder="Masukkan Nomor Order atau Tanggal (YYYY-MM-DD)" />
+    <label>Tanggal (YYYY-MM-DD):</label>
+    <input type="date" id="search_date" />
+    <label>Nama Ruang:</label>
+    <input type="text" id="search_room" placeholder="Contoh: Angel" />
     <button onclick="cariOrder()">Cari</button>
     <div id="edit-result"></div>
   `;
@@ -105,13 +108,18 @@ function showEditOrder() {
 }
 
 async function cariOrder() {
-  const keyword = document.getElementById("search_order").value.trim();
-  if (!keyword) return alert("Masukkan nomor order atau tanggal");
+  const date = document.getElementById("search_date").value.trim();
+  const room = document.getElementById("search_room").value.trim();
 
-  let { data, error } = await supabase
+  if (!date || !room) {
+    return alert("Lengkapi tanggal dan nama ruang.");
+  }
+
+  const { data, error } = await supabase
     .from("orders")
     .select("*")
-    .or(`order_number.eq.${keyword},order_date.eq.${keyword}`);
+    .eq("order_date", date)
+    .ilike("room_name", room); // ilike agar tidak case-sensitive
 
   if (error || !data.length) {
     document.getElementById("edit-result").innerHTML = "Order tidak ditemukan.";
@@ -131,21 +139,6 @@ async function cariOrder() {
     <button onclick="updateOrder('${order.order_number}')">Simpan Perubahan</button>
   `;
   document.getElementById("edit-result").innerHTML = html;
-}
-
-async function updateOrder(order_number) {
-  const newStatus = document.getElementById("new_payment_status").value;
-  const { error } = await supabase
-    .from("orders")
-    .update({ payment_status: newStatus })
-    .eq("order_number", order_number);
-
-  if (error) {
-    alert("Gagal update: " + error.message);
-  } else {
-    alert("Berhasil diperbarui!");
-    document.getElementById("content-section").innerHTML = "";
-  }
 }
 
 // === TARIK DATA + EXPORT ===
