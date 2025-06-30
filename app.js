@@ -3,7 +3,7 @@ const SUPABASE_URL = "https://zbunmfsedqalvvadwgkk.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpidW5tZnNlZHFhbHZ2YWR3Z2trIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyNjE2NTUsImV4cCI6MjA2NjgzNzY1NX0.wUEGv5FavNSQT3iNlo6WnW_d3TcDVxRTx8sI6xD-wxQ";
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Fungsi login pakai password
+// Login password
 function checkPassword() {
   const pass = document.getElementById('password-input').value;
   if (pass === 'default123') {
@@ -14,7 +14,7 @@ function checkPassword() {
   }
 }
 
-// Menampilkan form New Order
+// Tampilkan form New Order
 function showNewOrder() {
   const html = `
     <h3>New Order</h3>
@@ -28,8 +28,8 @@ function showNewOrder() {
     </select>
 
     <input type="text" id="room_name" placeholder="Nama Ruang" />
-    <input type="number" id="vouchers" placeholder="Jumlah Voucher" />
-    <input type="number" id="extra_hours" placeholder="Jam Tambahan" />
+    <input type="number" id="vouchers" placeholder="Jumlah Voucher" oninput="updateRoomOptions()" />
+    <input type="number" id="extra_hours" placeholder="Jam Tambahan" oninput="updateRoomOptions()" />
     <input type="text" id="total_bill" placeholder="Total Bill" readonly />
 
     <select id="payment_method">
@@ -45,32 +45,34 @@ function showNewOrder() {
   document.getElementById('order_date').valueAsDate = new Date();
 }
 
-// Mengupdate total bill otomatis saat input berubah
+// Hitung total otomatis
 function updateRoomOptions() {
   const category = document.getElementById('room_category').value;
+  const v = parseInt(document.getElementById('vouchers')?.value || 0);
+  const h = parseInt(document.getElementById('extra_hours')?.value || 0);
   const totalInput = document.getElementById('total_bill');
-  const v = parseInt(document.getElementById('vouchers').value || 0);
-  const h = parseInt(document.getElementById('extra_hours').value || 0);
-  let total = 0;
 
+  let total = 0;
   if (category === 'Tulip') {
     total = v * 1000 + h * 350;
   } else if (category === 'Orchid') {
     total = v * 750 + h * 250;
   }
 
-  totalInput.value = total;
+  if (totalInput) {
+    totalInput.value = total;
+  }
 }
 
-// Fungsi simpan ke Supabase
+// Simpan ke Supabase
 async function simpanOrder() {
   const orderNumber = document.getElementById("order_number").value;
   const orderDate = document.getElementById("order_date").value;
   const roomCategory = document.getElementById("room_category").value;
   const roomName = document.getElementById("room_name").value;
-  const vouchers = parseInt(document.getElementById("vouchers").value);
-  const extraHours = parseInt(document.getElementById("extra_hours").value);
-  const totalBill = parseFloat(document.getElementById("total_bill").value);
+  const vouchers = parseInt(document.getElementById("vouchers").value || 0);
+  const extraHours = parseInt(document.getElementById("extra_hours").value || 0);
+  const totalBill = parseFloat(document.getElementById("total_bill").value || 0);
   const paymentMethod = document.getElementById("payment_method").value;
   const paymentStatus = paymentMethod === "Pay Later" ? "Belum Lunas" : "Lunas";
 
