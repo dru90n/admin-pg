@@ -30,7 +30,7 @@ async function showNewOrder() {
     <select id="payment_method">
       <option value="Cash">Cash</option>
       <option value="Transfer">Transfer</option>
-      <option value="Pay Later">Pay Later</option>
+      <option value="Pending Bill">Pending Bill</option>
     </select>
     <button onclick="simpanOrder()">Simpan</button>
   `;
@@ -71,7 +71,7 @@ async function simpanOrder() {
     extra_hours: parseInt(document.getElementById("extra_hours").value || 0),
     total_bill: parseFloat(document.getElementById("total_bill").value || 0),
     payment_method: document.getElementById("payment_method").value,
-    payment_status: document.getElementById("payment_method").value === "Pay Later" ? "Belum Lunas" : "Lunas",
+    payment_status: document.getElementById("payment_method").value === "Pending Bill" ? "Belum Lunas" : "Lunas",
     created_at: new Date().toISOString()
   };
   const { error } = await supabase.from("orders").insert([data]);
