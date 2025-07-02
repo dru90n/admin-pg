@@ -23,7 +23,7 @@ async function showNewOrder() {
       <option value="Tulip">Tulip</option>
       <option value="Orchid">Orchid</option>
     </select>
-    <input type="text" id="room_name" placeholder="Nama Ruang" />
+    <input type="text" id="room_name" placeholder="Nama Talent" />
     <input type="number" id="vouchers" placeholder="Jumlah Voucher" oninput="updateRoomOptions()" />
     <input type="number" id="extra_hours" placeholder="Jam Tambahan" oninput="updateRoomOptions()" />
     <input type="text" id="total_bill" placeholder="Total Bill" readonly />
@@ -87,7 +87,7 @@ function showEditOrder() {
     <h3>Edit Order</h3>
     <label>Tanggal (YYYY-MM-DD):</label>
     <input type="date" id="search_date" />
-    <label>Nama Ruang:</label>
+    <label>Nama Talent:</label>
     <input type="text" id="search_room" placeholder="Contoh: Angel" />
     <button onclick="cariOrder()">Cari</button>
     <div id="edit-result"></div>
@@ -98,7 +98,7 @@ function showEditOrder() {
 async function cariOrder() {
   const date = document.getElementById("search_date").value.trim();
   const room = document.getElementById("search_room").value.trim();
-  if (!date || !room) return alert("Lengkapi tanggal dan nama ruang.");
+  if (!date || !room) return alert("Lengkapi tanggal dan Nama talent.");
   const { data } = await supabase.from("orders").select("*").eq("order_date", date).ilike("room_name", room);
   if (!data.length) return document.getElementById("edit-result").innerHTML = "Order tidak ditemukan.";
   const order = data[0];
