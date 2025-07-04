@@ -87,8 +87,8 @@ function showEditOrder() {
     <h3>Edit Order</h3>
     <label>Tanggal (YYYY-MM-DD):</label>
     <input type="date" id="search_date" />
-    <label>Nama Talent:</label>
-    <input type="text" id="search_room" placeholder="Contoh: Angel" />
+    <label>No Order:</label>
+    <input type="text" id="search_room" placeholder="Contoh: ORD0000XX" />
     <button onclick="cariOrder()">Cari</button>
     <div id="edit-result"></div>
   `;
@@ -98,14 +98,14 @@ function showEditOrder() {
 async function cariOrder() {
   const date = document.getElementById("search_date").value.trim();
   const room = document.getElementById("search_room").value.trim();
-  if (!date || !room) return alert("Lengkapi tanggal dan Nama talent.");
-  const { data } = await supabase.from("orders").select("*").eq("order_date", date).ilike("room_name", room);
+  if (!date || !room) return alert("Lengkapi tanggal dan No Order.");
+  const { data } = await supabase.from("orders").select("*").eq("order_date", date).ilike("order_number", room);
   if (!data.length) return document.getElementById("edit-result").innerHTML = "Order tidak ditemukan.";
   const order = data[0];
   const html = `
     <p><b>Nomor:</b> ${order.order_number}</p>
     <p><b>Tanggal:</b> ${order.order_date}</p>
-    <p><b>Ruang:</b> ${order.room_name}</p>
+    <p><b>Nama:</b> ${order.room_name}</p>
     <p><b>Status Pembayaran:</b> ${order.payment_status}</p>
     <select id="new_payment_status">
       <option value="Lunas" ${order.payment_status === "Lunas" ? "selected" : ""}>Lunas</option>
